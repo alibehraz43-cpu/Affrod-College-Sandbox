@@ -1,0 +1,337 @@
+<!--
+  Afford College | Personalized Bridge Page | SANDBOX v0.1
+  Paste this whole block into ONE GHL "Custom JS/HTML" element on a blank full-width page.
+  Edit the CONFIG block below. All copy is DEMO COPY (LER supplies the final copy).
+
+  URL options:
+    ?rid=<id>                         live mode, reads the result through Railway
+    ?demo=1                           shows the demo switcher (all 64 combinations)
+    ?demo=1&c=RETIREMENT_RISK&b=AT_RISK&t=JUNIOR&n=Peter&s=46
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+
+<style>
+  #acb{--ink:#14284B;--paper:#F7F9FC;--rule:#D9E0EA;--text:#1E2633;--muted:#566275;--cta:#F2B544;
+       --crisis:#B42318;--at_risk:#C2620A;--good:#157F6B;--excellent:#1F5BB8;--band:var(--ink);
+       font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--text);
+       background:var(--paper);line-height:1.6;font-size:17px;-webkit-font-smoothing:antialiased}
+  #acb *{box-sizing:border-box}
+  #acb .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+  #acb h1,#acb h2,#acb h3{font-family:"Source Serif 4",Georgia,"Times New Roman",serif;color:var(--ink);margin:0;font-weight:600;line-height:1.25}
+  #acb p{margin:0}
+
+  #acb .top{background:var(--ink);color:#fff;padding:14px 0}
+  #acb .top .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  #acb .brand{font-weight:700;letter-spacing:.01em}
+  #acb .top small{opacity:.8}
+
+  /* loading: nothing personal is visible until the result resolves */
+  #acb .skeleton{padding:64px 0;text-align:center;color:var(--muted)}
+  #acb .skeleton .bar{height:10px;max-width:320px;margin:14px auto 0;border-radius:6px;
+       background:linear-gradient(90deg,#e6ebf2 0%,#f3f6fa 50%,#e6ebf2 100%);background-size:200% 100%;animation:acb-sh 1.2s linear infinite}
+  @keyframes acb-sh{to{background-position:-200% 0}}
+  #acb.is-loading .result{display:none}
+  #acb:not(.is-loading) .skeleton{display:none}
+
+  /* score anchor: the one bold moment */
+  #acb .score{padding:44px 0 28px;border-bottom:1px solid var(--rule)}
+  #acb .greet{color:var(--muted);font-size:1rem}
+  #acb .scoreline{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:6px}
+  #acb .num{font-family:"Source Serif 4",Georgia,serif;font-size:clamp(64px,14vw,104px);line-height:1;color:var(--band);font-weight:600}
+  #acb .num small{font-size:.32em;color:var(--muted);font-weight:500}
+  #acb .bandname{font-size:1.25rem;font-weight:700;color:var(--band)}
+  #acb .meter{height:8px;background:#e3e8ef;border-radius:8px;margin:18px 0 20px;overflow:hidden}
+  #acb .meter span{display:block;height:100%;width:0;background:var(--band);border-radius:8px;transition:width .9s ease-out}
+  #acb .facts{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+  #acb .facts li{background:#fff;border:1px solid var(--rule);border-radius:999px;padding:6px 14px;font-size:.9rem}
+  #acb .facts b{font-weight:600}
+
+  #acb .headline{padding:36px 0 8px}
+  #acb .headline h1{font-size:clamp(26px,4.4vw,36px);line-height:1.25;max-width:30ch}
+
+  #acb .video{margin:24px 0 8px;aspect-ratio:16/9;background:var(--ink);border-radius:10px;overflow:hidden;
+       display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px}
+  #acb .video iframe,#acb .video video{width:100%;height:100%;border:0}
+  #acb .video .play{width:64px;height:64px;border-radius:50%;background:var(--cta);margin:0 auto 12px;position:relative}
+  #acb .video .play:after{content:"";position:absolute;left:26px;top:20px;border-left:18px solid var(--ink);border-top:12px solid transparent;border-bottom:12px solid transparent}
+  #acb .vcap{color:var(--muted);font-size:.9rem;margin-bottom:28px}
+
+  #acb .panels{display:grid;grid-template-columns:1fr 1fr;gap:28px;padding:28px 0;border-top:1px solid var(--rule)}
+  #acb .panels h3{font-size:1.2rem;margin-bottom:8px}
+  #acb .panels .band-h{color:var(--band)}
+
+  #acb .move{background:#fff;border-left:5px solid var(--cta);border-radius:0 10px 10px 0;padding:24px 26px;margin:8px 0 36px}
+  #acb .move h2{font-size:1.35rem;margin-bottom:8px}
+
+  #acb .bridge{background:var(--ink);color:#fff;padding:44px 0 52px}
+  #acb .bridge h2{color:#fff;font-size:clamp(24px,3.6vw,30px);margin-bottom:12px;max-width:26ch}
+  #acb .bridge p{opacity:.92;max-width:60ch}
+  #acb .times{display:flex;flex-wrap:wrap;gap:8px 18px;margin:18px 0 24px;font-weight:600}
+  #acb .cta{display:inline-block;background:var(--cta);color:var(--ink);font-weight:700;font-size:1.05rem;
+       padding:16px 28px;border-radius:8px;text-decoration:none}
+  #acb .cta:hover{filter:brightness(1.05)}
+  #acb .cta:focus-visible,#acb select:focus-visible,#acb input:focus-visible{outline:3px solid #7FB0FF;outline-offset:2px}
+  #acb .fine{font-size:.85rem;opacity:.75;margin-top:14px}
+
+  #acb .foot{padding:24px 0;color:var(--muted);font-size:.8rem;text-align:center}
+
+  /* demo switcher (only with ?demo=1) */
+  #acb .demo{position:sticky;top:0;z-index:5;background:#fff8e6;border-bottom:1px solid #f0d58a;padding:10px 0;font-size:.85rem}
+  #acb .demo .wrap{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+  #acb .demo select,#acb .demo input{font:inherit;padding:4px 6px;border:1px solid #cfc29a;border-radius:6px;background:#fff}
+  #acb .demo input[type=number]{width:64px}
+  #acb .demo code{background:#fff;padding:2px 6px;border-radius:4px}
+
+  @media (max-width:640px){#acb .panels{grid-template-columns:1fr;gap:20px}}
+  @media (prefers-reduced-motion:reduce){#acb .meter span{transition:none}#acb .skeleton .bar{animation:none}}
+</style>
+
+<div id="acb" class="is-loading">
+  <div class="demo" id="acb-demo" hidden>
+    <div class="wrap">
+      <strong>Demo</strong>
+      <label>Concern <select id="d-c"></select></label>
+      <label>Band <select id="d-b"></select></label>
+      <label>Timeline <select id="d-t"></select></label>
+      <label>Name <input id="d-n" value="Peter" size="8"></label>
+      <label>Score <input id="d-s" type="number" min="0" max="100" value="46"></label>
+      <label><input type="checkbox" id="d-f"> Force fallback</label>
+      <span>Segment <code id="d-k"></code></span>
+    </div>
+  </div>
+
+  <header class="top"><div class="wrap"><span class="brand">Afford College</span><small>Your personal results</small></div></header>
+
+  <div class="skeleton" aria-live="polite"><div class="wrap">Preparing your results<div class="bar"></div></div></div>
+
+  <main class="result">
+    <section class="score"><div class="wrap">
+      <p class="greet" id="acb-greet"></p>
+      <div class="scoreline">
+        <div class="num" id="acb-num-wrap"><span id="acb-num"></span><small> / 100</small></div>
+        <div class="bandname" id="acb-band"></div>
+      </div>
+      <div class="meter" aria-hidden="true"><span id="acb-meter"></span></div>
+      <ul class="facts" id="acb-facts"></ul>
+    </div></section>
+
+    <section class="headline"><div class="wrap"><h1 id="acb-headline"></h1></div></section>
+
+    <section><div class="wrap">
+      <div class="video" id="acb-video"></div>
+      <p class="vcap" id="acb-vcap"></p>
+    </div></section>
+
+    <section><div class="wrap"><div class="panels" id="acb-panels">
+      <div><h3 class="band-h" id="acb-band-h"></h3><p id="acb-band-p"></p></div>
+      <div><h3 id="acb-time-h"></h3><p id="acb-time-p"></p></div>
+    </div></div></section>
+
+    <section><div class="wrap"><div class="move">
+      <h2>Your first move</h2>
+      <p id="acb-move"></p>
+    </div></div></section>
+
+    <section class="bridge"><div class="wrap">
+      <h2>Complete your diagnosis on Tuesday</h2>
+      <p id="acb-bridge-p">In the free live workshop we connect your score to the price you will actually pay, how aid is decided, what your family can safely contribute, and the decisions ahead of you.</p>
+      <div class="times"><span>5 PT</span><span>6 MT</span><span>7 CT</span><span>8 ET</span></div>
+      <a class="cta" id="acb-cta" href="#">Reserve my seat for Tuesday’s workshop</a>
+      <p class="fine" id="acb-date"></p>
+    </div></section>
+  </main>
+
+  <footer class="foot"><div class="wrap">Afford College. Educational information only, not financial advice.</div></footer>
+</div>
+
+<script>
+(function () {
+  /* ================= CONFIG ================= */
+  var CONFIG = {
+    API_BASE: 'https://YOUR-SERVICE.up.railway.app',   // Railway public URL, no trailing slash
+    REGISTER_URL: 'https://YOUR-GHL-DOMAIN/workshop-register',
+    NEXT_WORKSHOP_LABEL: 'Next session: Tuesday', // or swap for a GHL custom value
+    ALLOW_DEMO: true,                              // set false before going live
+    TIMEOUT_MS: 12000,
+    VIDEO_URLS: {                                  // GHL Media embed URLs, one per concern
+      TOO_MUCH_FOR_AID: '', RETIREMENT_RISK: '', OVERWHELMED: '', MISSING_SOMETHING: ''
+    }
+  };
+
+  /* ============ CONTENT LIBRARY (author the axes, not the cells) ============
+     Each module depends on ONE axis only. DEMO COPY: replace with LER copy. */
+  var CONCERN = {
+    TOO_MUCH_FOR_AID: {
+      label: 'Earning too much for aid',
+      headline: 'You may earn too much to qualify for aid, and still not be able to pay full price. That gap is where most families overpay.',
+      video: 'Why “too much for aid” is not the same as “able to pay”',
+      move: 'Write down the yearly amount your family can safely contribute, before you look at any college’s price. Keep it separate from what colleges say you can pay.'
+    },
+    RETIREMENT_RISK: {
+      label: 'Protecting retirement',
+      headline: 'Your biggest risk may not be college debt. It may be paying for college in a way that quietly uses up the money you will need for retirement.',
+      video: 'Why college funding and retirement need one clear boundary',
+      move: 'Before discussing individual colleges, set the most the parents can contribute over four years without touching money set aside for retirement.'
+    },
+    OVERWHELMED: {
+      label: 'Not sure where to begin',
+      headline: 'Feeling overwhelmed usually means everything is being treated as one giant task. It gets lighter once it is split into the next few decisions.',
+      video: 'How to turn the college money question into three decisions',
+      move: 'List only the next three decisions your family has to make, with a date for each. Ignore everything else for now.'
+    },
+    MISSING_SOMETHING: {
+      label: 'Worried we’re missing something',
+      headline: 'You are in better shape than most, but one unchecked assumption can still change what college costs you by thousands a year.',
+      video: 'The assumptions confident families most often get wrong',
+      move: 'Write down every assumption you are making about cost, aid and merit money, then mark which ones you have actually confirmed.'
+    }
+  };
+
+  var BAND = {
+    CRISIS:    { label: 'Crisis',    css: 'crisis',    h: 'What “Crisis” means', p: 'Your answers show several pressure points at once. Without changes, the cost of college is likely to land on your family’s finances in ways that are hard to undo. The good news: this is the band where early action changes the most.' },
+    AT_RISK:   { label: 'At Risk',   css: 'at_risk',   h: 'What “At Risk” means', p: 'Your family has a workable foundation, but there are real gaps. Left alone, those gaps tend to show up as surprise costs or rushed decisions later in the process.' },
+    GOOD:      { label: 'Good',      css: 'good',      h: 'What “Good” means', p: 'You are ahead of most families. The work now is protecting that position and making sure the choices ahead don’t quietly erode it.' },
+    EXCELLENT: { label: 'Excellent', css: 'excellent', h: 'What “Excellent” means', p: 'You are well prepared. Your main opportunity is using that strength to get better value, not just to cover the bill.' }
+  };
+
+  var TIMELINE = {
+    SENIOR:        { label: 'Senior',                h: 'Why senior year matters', p: 'Aid forms, deadlines and offers all arrive this year. Decisions made in the next few months directly set what you will pay.' },
+    JUNIOR:        { label: 'Junior',                h: 'Why junior year matters', p: 'Junior year still gives you room to plan. The financial picture colleges use is about to be set, so this is the best time to shape it.' },
+    SOPH_FRESH:    { label: 'Freshman or sophomore', h: 'Why early high school matters', p: 'You have time, which is your biggest advantage. Small changes now compound before colleges ever look at your finances.' },
+    MIDDLE_SCHOOL: { label: 'Middle school',         h: 'Why starting in middle school matters', p: 'You are years ahead of most families. The focus now is building habits and savings choices that keep options open later.' }
+  };
+
+  var FALLBACK = {
+    headline: 'Your results are in. Here is what they mean for paying for college.',
+    video: 'How to read your College Affordability Score',
+    bandH: 'What your score means', bandP: 'Your score reflects how prepared your family is for the real cost of college, and where the biggest gaps are.',
+    timeH: 'Why timing matters', timeP: 'Every year before college gives you different options. Knowing which ones are still open is the first step.',
+    move: 'Write down the most your family can safely contribute each year, before you look at any college’s price.'
+  };
+
+  /* ================= helpers ================= */
+  var root = document.getElementById('acb');
+  var $ = function (id) { return document.getElementById(id); };
+  var params = new URLSearchParams(window.location.search);
+  var has = function (obj, k) { return Object.prototype.hasOwnProperty.call(obj, k); };
+  var setText = function (id, v) { $(id).textContent = v == null ? '' : String(v); }; // never innerHTML with URL/API data
+
+  function track(event, data) {
+    // Hook for GHL tracking later (e.g. 30_ACT_BridgeViewed). Never send financial data.
+    try { if (window.console) console.log('[acb]', event, data || {}); } catch (e) {}
+  }
+
+  function render(r) {
+    // r = { firstName, score, band, concern, timeline }  (codes already whitelisted)
+    var ok = has(CONCERN, r.concern) && has(BAND, r.band) && has(TIMELINE, r.timeline);
+    var c = ok ? CONCERN[r.concern] : null, b = has(BAND, r.band) ? BAND[r.band] : null, t = ok ? TIMELINE[r.timeline] : null;
+
+    root.style.setProperty('--band', b ? 'var(--' + b.css + ')' : 'var(--ink)');
+    setText('acb-greet', r.firstName ? r.firstName + ', your College Affordability Score is' : 'Your College Affordability Score is');
+
+    var hasScore = typeof r.score === 'number' && r.score >= 0 && r.score <= 100;
+    $('acb-num-wrap').hidden = !hasScore;
+    setText('acb-num', hasScore ? r.score : '');
+    setText('acb-band', b ? b.label : '');
+    $('acb-meter').style.width = hasScore ? r.score + '%' : '0';
+
+    var facts = $('acb-facts'); facts.textContent = '';
+    if (ok) {
+      [['Biggest concern', c.label], ['Readiness', b.label], ['Timeline', t.label]].forEach(function (f) {
+        var li = document.createElement('li'), bold = document.createElement('b');
+        bold.textContent = f[0] + ': '; li.appendChild(bold); li.appendChild(document.createTextNode(f[1])); facts.appendChild(li);
+      });
+    }
+
+    setText('acb-headline', ok ? c.headline : FALLBACK.headline);
+    renderVideo(ok ? r.concern : null, ok ? c.video : FALLBACK.video);
+    setText('acb-band-h', b ? b.h : FALLBACK.bandH);
+    setText('acb-band-p', b ? b.p : FALLBACK.bandP);
+    setText('acb-time-h', ok ? t.h : FALLBACK.timeH);
+    setText('acb-time-p', ok ? t.p : FALLBACK.timeP);
+    setText('acb-move', ok ? c.move : FALLBACK.move);
+
+    var rid = params.get('rid');
+    var url = CONFIG.REGISTER_URL + (rid ? (CONFIG.REGISTER_URL.indexOf('?') > -1 ? '&' : '?') + 'rid=' + encodeURIComponent(rid) : '');
+    $('acb-cta').href = url;
+    setText('acb-date', CONFIG.NEXT_WORKSHOP_LABEL);
+
+    root.classList.remove('is-loading');
+    track(ok ? 'bridge_viewed' : 'bridge_fallback', { segment: ok ? r.concern + '-' + r.band + '-' + r.timeline : null });
+    return ok;
+  }
+
+  function renderVideo(concern, title) {
+    var box = $('acb-video'); box.textContent = '';
+    var src = concern && CONFIG.VIDEO_URLS[concern];
+    if (src && /^https:\/\//.test(src)) {
+      var f = document.createElement('iframe');
+      f.src = src; f.title = title; f.allow = 'autoplay; fullscreen; picture-in-picture'; f.allowFullscreen = true;
+      box.appendChild(f);
+    } else {
+      var inner = document.createElement('div'), play = document.createElement('div'), cap = document.createElement('div');
+      play.className = 'play'; cap.textContent = 'Video placeholder: ' + title;
+      inner.appendChild(play); inner.appendChild(cap); box.appendChild(inner);
+    }
+    setText('acb-vcap', '2-minute video: ' + title);
+  }
+
+  /* ================= demo mode ================= */
+  function startDemo() {
+    $('acb-demo').hidden = false;
+    var fill = function (id, obj, sel) {
+      var s = $(id);
+      Object.keys(obj).forEach(function (k) { var o = document.createElement('option'); o.value = k; o.textContent = k; s.appendChild(o); });
+      if (sel && has(obj, sel)) s.value = sel;
+    };
+    fill('d-c', CONCERN, params.get('c') || 'RETIREMENT_RISK');
+    fill('d-b', BAND, params.get('b') || 'AT_RISK');
+    fill('d-t', TIMELINE, params.get('t') || 'JUNIOR');
+    if (params.get('n')) $('d-n').value = params.get('n').slice(0, 40);
+    if (params.get('s')) $('d-s').value = params.get('s');
+
+    var update = function () {
+      var force = $('d-f').checked;
+      var r = {
+        firstName: $('d-n').value.trim().slice(0, 40),
+        score: Math.max(0, Math.min(100, parseInt($('d-s').value, 10) || 0)),
+        band: $('d-b').value,
+        concern: force ? null : $('d-c').value,
+        timeline: $('d-t').value
+      };
+      setText('d-k', force ? 'FALLBACK' : r.concern + '-' + r.band + '-' + r.timeline);
+      render(r);
+    };
+    ['d-c', 'd-b', 'd-t', 'd-n', 'd-s', 'd-f'].forEach(function (id) { $(id).addEventListener('input', update); $(id).addEventListener('change', update); });
+    update();
+  }
+
+  /* ================= live mode ================= */
+  function startLive() {
+    var rid = params.get('rid');
+    if (!rid) { render({}); track('bridge_no_id'); return; }
+
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, CONFIG.TIMEOUT_MS);
+
+    fetch(CONFIG.API_BASE + '/api/bridge?rid=' + encodeURIComponent(rid), { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit' })
+      .then(function (res) { return res.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        clearTimeout(timer);
+        render({
+          firstName: typeof d.firstName === 'string' ? d.firstName : '',
+          score: typeof d.score === 'number' ? d.score : null,
+          band: d.band, concern: d.concern, timeline: d.timeline
+        });
+        if (d.status !== 'ok') track('personalization_failed', { status: d.status, missing: d.missing });
+      })
+      .catch(function () { clearTimeout(timer); render({}); track('personalization_failed', { status: 'network' }); });
+  }
+
+  function boot() {
+    if (CONFIG.ALLOW_DEMO && params.get('demo') === '1') startDemo(); else startLive();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>

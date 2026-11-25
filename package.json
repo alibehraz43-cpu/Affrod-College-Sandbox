@@ -1,0 +1,15 @@
+{
+  "name": "ac-bridge-handoff",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Afford College sandbox: reads the ScoreApp result from the GHL contact and returns safe display values to the bridge page.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node src/selftest.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "express": "4.21.2"
+  }
+}
